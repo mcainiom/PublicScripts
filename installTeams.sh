@@ -26,7 +26,7 @@ logandmetadir="/Library/Logs/Microsoft/IntuneScripts/installTeams"      # The lo
 processpath="/Applications/Microsoft Teams.app/Contents/MacOS/Teams"    # The process name of the App we are installing
 terminateprocess="false"                                                # Do we want to terminate the running process? If false we'll wait until its not running
 autoUpdate="false"                                                      # If true, application updates itself and we should not attempt to update
-localServerAvailable=curl -I $localcopy 2>&1 | awk '/HTTP\// {print $2}'# Returns 200 if available, else will fall back to Web
+localServerAvailable=$(curl -I $localcopy 2>&1 | awk '/HTTP\// {print $2}') # Returns 200 if available, else will fall back to Web
 
 # Generated variables
 tempdir=$(mktemp -d)
@@ -210,10 +210,12 @@ function downloadApp () {
     echo "$(date) | Downloading $appname"
 
     cd "$tempdir"
-    if $localServerAvailable = '200' then
-        curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$localcopy"
+    if [[ $localServerAvailable = '200' ]]; then
+    echo yes
+         #   curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$localcopy"
     else
-        curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
+    echo no
+          #  curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
     fi
     
     if [ $? == 0 ]; then
