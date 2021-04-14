@@ -19,12 +19,14 @@
 
 # User Defined variables
 weburl="https://go.microsoft.com/fwlink/?linkid=869428"   # What is the Azure Blob Storage URL?
+localcopy="http://cmp01e-1.ran.ynsee.education/MacDeployment/PKGs/Teams_osx.pkg"    # This is your local copy of the OfficeBusinessPro.pkg file. You need to handle this independently, comment out if not required
 appname="Microsoft Teams"                                               # The name of our App deployment script (also used for Octory monitor)
 app="Microsoft Teams.app"                                               # The actual name of our App once installed
 logandmetadir="/Library/Logs/Microsoft/IntuneScripts/installTeams"      # The location of our logs and last updated data
 processpath="/Applications/Microsoft Teams.app/Contents/MacOS/Teams"    # The process name of the App we are installing
 terminateprocess="false"                                                # Do we want to terminate the running process? If false we'll wait until its not running
 autoUpdate="false"                                                      # If true, application updates itself and we should not attempt to update
+localServerAvailable=curl -I $localcopy 2>&1 | awk '/HTTP\// {print $2}'# Returns 200 if available, else will fall back to Web
 
 # Generated variables
 tempdir=$(mktemp -d)
@@ -208,7 +210,12 @@ function downloadApp () {
     echo "$(date) | Downloading $appname"
 
     cd "$tempdir"
-    curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
+    if $localServerAvailable = '200' then
+        curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$localcopy"
+    else
+        curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
+    fi
+    
     if [ $? == 0 ]; then
 
             # We have downloaded a file, we need to know what the file is called and what type of file it is
