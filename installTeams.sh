@@ -211,8 +211,10 @@ function downloadApp () {
 
     cd "$tempdir"
     if [[ $localServerAvailable = '200' ]]; then
+        echo "$(date) | Downloading $appname from Local Server"
          curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$localcopy"
     else
+        echo "$(date) | Downloading $appname from Microsoft"
          curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
     fi
     
