@@ -19,7 +19,6 @@
 
 # User Defined variables
 weburl="https://go.microsoft.com/fwlink/?linkid=869428"   # What is the Azure Blob Storage URL?
-localcopy="http://cmp01e-1.ran.ynsee.education/MacDeployment/PKGs/Teams_osx.pkg"    # This is your local copy of the OfficeBusinessPro.pkg file. You need to handle this independently, comment out if not required
 appname="Microsoft Teams"                                               # The name of our App deployment script (also used for Octory monitor)
 app="Microsoft Teams.app"                                               # The actual name of our App once installed
 logandmetadir="/Library/Logs/Microsoft/IntuneScripts/installTeams"      # The location of our logs and last updated data
@@ -199,40 +198,75 @@ function downloadApp () {
     ###############################################################
     ###############################################################
 
-     echo "$(date) | Starting downlading of [$appname]"
+    echo "$(date) | Starting downlading of [$appname]"
 
-    # If local copy is defined, let's try and download it...
-    if [ "$localcopy" ]; then
+    # wait for other downloads to complete
+    waitForProcess "curl"
 
-        updateOctory installing
-        # Check to see if we can access our local copy of Office
-        echo "$(date) | Downloading [$localcopy] to [$tempfile]"
-        rm -rf "$tempfile" > /dev/null 2>&1
-        curl -f -s -L -o "$tempfile" "$localcopy"
-        if [ $? == 0 ]; then
-            echo "$(date) | Local copy of $appname downloaded at $tempfile"
-            downloadcomplete="true"
-        fi
-    fi
+    #download the file
+    updateOctory installing
+    echo "$(date) | Downloading $appname"
 
-    # If we failed to download the local copy, or it wasn't defined then try to download from CDN
-    if [[ "$downloadcomplete" != "true" ]]; then
+    cd "$tempdir"
+    curl -f -s --connect-timeout 30 --retry 5 --retry-delay 60 -L -J -O "$weburl"
+    if [ $? == 0 ]; then
 
-        waitForProcess "curl"
-        updateOctory installing
-        rm -rf "$tempfile" > /dev/null 2>&1
-        echo "$(date) | Downloading [$weburl] to [$tempfile]"
-        curl -f -s --connect-timeout 60 --retry 10 --retry-delay 30 -L -o "$tempfile" "$weburl"
-        if [ $? == 0 ]; then
-            echo "$(date) | Downloaded $weburl to $tempfile"
-        else
+            # We have downloaded a file, we need to know what the file is called and what type of file it is
+            tempSearchPath="$tempdir/*"
+            for f in $tempSearchPath; do
+                tempfile=$f
+            done
 
-            echo "$(date) | Failure to download $weburl to $tempfile"
-            updateOctory failed
-            exit 1
+            case $tempfile in
 
-        fi
+            *.pkg|*.PKG)
+                packageType="PKG"
+                ;;
 
+            *.zip|*.ZIP)
+                packageType="ZIP"
+                ;;
+
+            *.dmg|*.DMG)
+                packageType="DMG"
+                ;;
+
+            *)
+                # We can't tell what this is by the file name, lets look at the metadata
+                echo "$(date) | Unknown file type [$f], analysing metadata"
+                metadata=$(file "$tempfile")
+                if [[ "$metadata" == *"Zip archive data"* ]]; then
+                    packageType="ZIP"
+                    mv "$tempfile" "$tempdir/install.zip"
+                    tempfile="$tempdir/install.zip"
+                fi
+
+                if [[ "$metadata" == *"xar archive"* ]]; then
+                    packageType="PKG"
+                    mv "$tempfile" "$tempdir/install.pkg"
+                    tempfile="$tempdir/install.pkg"
+                fi
+
+                if [[ "$metadata" == *"bzip2 compressed data"* ]] || [[ "$metadata" == *"zlib compressed data"* ]] ; then
+                    packageType="DMG"
+                    mv "$tempfile" "$tempdir/install.dmg"
+                    tempfile="$tempdir/install.dmg"
+                fi
+                ;;
+            esac
+
+            if [[ ! $packageType ]]; then
+                echo "Failed to determine temp file type [$metadata]"
+                rm -rf "$tempdir"
+            else
+                echo "$(date) | Downloaded [$app] to [$tempfile]"
+                echo "$(date) | Detected install type as [$packageType]"
+            fi
+         
+    else
+    
+         echo "$(date) | Failure to download [$weburl] to [$tempfile]"
+         exit 1
     fi
 
 }
