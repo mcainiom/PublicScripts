@@ -5,9 +5,6 @@
 #
 ####################################################################################################
 #
-
-ChromeInstallLoc="/Applications/Google Chrome.app"
-
 # Vendor supplied PKG file
 VendorPKG="DockUtil.pkg"
 
