@@ -10,7 +10,7 @@
 VendorZIP="dockutil.zip"
 
 # Download vendor supplied DMG file into /tmp/
-curl https://github.com/mcainiom/PublicScripts/raw/main/$VendorZIP -o /tmp/$VendorZIP
+curl -L https://github.com/mcainiom/PublicScripts/raw/main/$VendorZIP -o /tmp/$VendorZIP
 
 unzip -o /tmp/$VendorZIP -d /usr/local/bin
 
