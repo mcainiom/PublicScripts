@@ -7,16 +7,13 @@
 #
 
 # Vendor supplied PKG file
-VendorPKG="DockUtil.pkg"
+VendorZIP="dockutil.zip"
 
 # Download vendor supplied DMG file into /tmp/
-curl https://github.com/mcainiom/PublicScripts/raw/main/$VendorPKG -o /tmp/$VendorPKG
+curl https://github.com/mcainiom/PublicScripts/raw/main/$VendorZIP -o /tmp/$VendorZIP
 
-# Instsall Google Chrome
-sudo installer -verboseR -pkg /tmp/$VendorPKG -target /
+unzip -o /tmp/$VendorZIP -d /usr/local/bin
 
-# Remove the downloaded vendor supplied PKG file
-rm -f /tmp/$VendorPKG
 
 
 exit 0
