@@ -21,4 +21,4 @@ unzip -o /tmp/$VendorZIP -d /tmp
 sh /tmp/SymantecRemovalTool/SymantecRemovalTool.command
 
 exit 0
-
+fi
