@@ -7,14 +7,14 @@
 #
 
 # Vendor supplied PKG file
-VendorZIP="dockutil.zip"
+VendorPKG="dockutil-3.0.2.pkg"
 
 # Download vendor supplied DMG file into /tmp/
-curl -L https://github.com/mcainiom/PublicScripts/raw/main/$VendorZIP -o /tmp/$VendorZIP
+curl -L https://github.com/mcainiom/PublicScripts/raw/main/$VendorPKG -o /tmp/$VendorPKG
 
-unzip -o /tmp/$VendorZIP -d /tmp
+sudo installer -verboseR -pkg /tmp/$VendorPKG -target /
 
-mv /tmp/dockutil /usr/local/bin
+rm -f /tmp/$VendorPKG
 
 
 
