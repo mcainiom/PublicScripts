@@ -11,6 +11,12 @@ log="/var/log/Dockutil.log"
 
 exec 1>> $log 2>&1
 
+tempfile=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
+        | grep name \
+        | grep .pkg \
+        | cut -d '"' -f 4)
+curl -L -o $tempfile $weburl
+
 weburl=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
         | grep browser_download_url \
         | cut -d '"' -f 4)
