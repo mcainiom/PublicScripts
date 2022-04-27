@@ -8,22 +8,26 @@
 
 # Vendor supplied PKG file
 log="/var/log/Dockutil.log"
-
+tempfileroot="/tmp/"
 exec 1>> $log 2>&1
 
-tempfile=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
+tempfilename=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
         | grep name \
         | grep .pkg \
         | cut -d '"' -f 4)
-curl -L -o $tempfile $weburl
+        
+tempfile=$tempfileroot$tempfilename
 
 weburl=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
         | grep browser_download_url \
         | cut -d '"' -f 4)
+        
 curl -L -o $tempfile $weburl
 
 echo "Download URL is $weburl"
 
 installer -verboseR -pkg $tempfile -target /
+
+rm -f $tempfile
 
 exit 0
