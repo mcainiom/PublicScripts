@@ -7,16 +7,17 @@
 #
 
 # Vendor supplied PKG file
-VendorPKG="dockutil-3.0.2.pkg"
+log="/var/log/Dockutil.log"
 
-# Download vendor supplied DMG file into /tmp/
-curl -L https://github.com/mcainiom/PublicScripts/raw/main/$VendorPKG -o /tmp/$VendorPKG
+exec 1>> $log 2>&1
 
-sudo installer -verboseR -pkg /tmp/$VendorPKG -target /
+weburl=$(curl -s https://api.github.com/repos/kcrawford/dockutil/releases/latest \
+        | grep browser_download_url \
+        | cut -d '"' -f 4)
+curl -L -o $tempfile $weburl
 
-rm -f /tmp/$VendorPKG
+echo "Download URL is $weburl"
 
-
+installer -verboseR -pkg $tempfile -target /
 
 exit 0
-
